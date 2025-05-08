@@ -5,6 +5,8 @@ import 'package:hear_music/core/models/play_list_provider.dart';
 import 'package:hear_music/core/screens/music/music_details_screen.dart';
 import 'package:hear_music/core/widgets/music/nue_box.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hear_music/core/services/shared_prefrences.dart';
 
 class MusicListBody extends StatefulWidget {
   const MusicListBody({super.key});
@@ -15,12 +17,33 @@ class MusicListBody extends StatefulWidget {
 
 class _MusicListBodyState extends State<MusicListBody> {
   late final dynamic playListProvider;
+  bool _loadedFromPrefs = false;
 
-  // This method is called when the widget is first created.
   @override
   void initState() {
     super.initState();
     playListProvider = Provider.of<PlayListProvider>(context, listen: false);
+    _loadPlaylistFromPrefs();
+  }
+
+  Future<void> _loadPlaylistFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final prefsService = SharedPreferencesService(prefs);
+    final savedSongs = prefsService.getPlayList();
+    if (savedSongs.isNotEmpty) {
+      // Clear and add all songs to the provider's playlist
+      playListProvider.playList
+        ..clear()
+        ..addAll(savedSongs);
+      setState(() {
+        _loadedFromPrefs = true;
+      });
+      playListProvider.notifyListeners();
+    } else {
+      setState(() {
+        _loadedFromPrefs = true;
+      });
+    }
   }
 
   //go to the song
@@ -35,6 +58,10 @@ class _MusicListBodyState extends State<MusicListBody> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_loadedFromPrefs) {
+      // Optionally show a loading indicator while loading from prefs
+      return const Center(child: CircularProgressIndicator());
+    }
     return Consumer<PlayListProvider>(
       builder: (BuildContext context, PlayListProvider value, Widget? child) {
         return ListView.builder(

@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize the local notifications service
   await LocalNotificationsService.init();
   LocalNotificationsService.showRepeatNotification(
     id: 1,
@@ -30,13 +29,23 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    // Wait for theme to load before building the app
+    if (themeProvider.prefsServiceLoading == true) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
     return MaterialApp(
       title: 'My music app',
       debugShowCheckedModeBanner: false,
-      theme: Provider.of<ThemeProvider>(context).themeData,
+      theme: themeProvider.themeData,
       home: const MusicsListScreen(),
     );
   }

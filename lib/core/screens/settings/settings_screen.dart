@@ -42,10 +42,17 @@ class SettingsScreen extends StatelessWidget {
           margin: const EdgeInsets.only(top: 25),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
-              ],
+              colors:
+                  Provider.of<ThemeProvider>(context, listen: false).isDarkMode
+                      ? [
+                        AppColors.greydarker600,
+                        AppColors.greydarker300,
+                        
+                      ]
+                      : [
+                        AppColors.greydarker500,
+                        AppColors.greydarker300,
+                      ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

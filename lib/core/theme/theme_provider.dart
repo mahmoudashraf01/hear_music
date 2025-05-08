@@ -1,30 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:hear_music/core/theme/dark_mode.dart';
 import 'package:hear_music/core/theme/light_mode.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hear_music/core/services/shared_prefrences.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  ThemeData _themeData = lightTheme; // Default theme is light
+  bool _isDarkMode = false;
+  bool _prefsServiceLoading = true; // <-- Add this line
+  SharedPreferencesService? _prefsService;
 
-  ThemeData get themeData => _themeData;
+  bool get isDarkMode => _isDarkMode;
+  bool get prefsServiceLoading => _prefsServiceLoading; // <-- Add this getter
 
-  bool get isDarkMode => _themeData == darkTheme;
+  ThemeProvider() {
+    _loadTheme();
+  }
 
-  set themeData(ThemeData theme) {
-    _themeData = theme;
-    // Notify listeners when the theme changes
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    _prefsService = SharedPreferencesService(prefs);
+    _isDarkMode = _prefsService!.getIsDarkMode();
+    _prefsServiceLoading = false; // <-- Set loading to false after loading
     notifyListeners();
   }
 
-  // Method to toggle between light and dark themes
-  // This method is called when the user taps the theme toggle button
-  // in the app bar or any other UI element
-  // It switches the theme and notifies listeners to rebuild the UI
-  void toggleTheme() {
-    if (_themeData == lightTheme) {
-      _themeData = darkTheme;
-    } else {
-      _themeData = lightTheme;
+  Future<void> toggleTheme() async {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+    if (_prefsService == null) {
+      final prefs = await SharedPreferences.getInstance();
+      _prefsService = SharedPreferencesService(prefs);
     }
-    notifyListeners();
+    await _prefsService!.setIsDarkMode(_isDarkMode);
   }
+
+  ThemeData get themeData => _isDarkMode ? ThemeData.dark() : ThemeData.light();
 }

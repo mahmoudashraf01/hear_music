@@ -33,6 +33,10 @@ class SharedPreferencesService {
     await _sharedPreferences.setBool(_isDarkModeKey, isDarkMode);
   }
 
+  bool getIsDarkMode() {
+    return _sharedPreferences.getBool(_isDarkModeKey) ?? false;
+  }
+
   //add List<SongModel> playlist to shared preferences
   Future<void> setPlayList(List<SongModel> playList) async {
     final String jsonString = SongModel.listToJson(playList);
